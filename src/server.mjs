@@ -1,6 +1,6 @@
 import app from './app.mjs';
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8900;
 const host = process.env.HOSTNAME || '0.0.0.0';
 
 // Launch Node.js server

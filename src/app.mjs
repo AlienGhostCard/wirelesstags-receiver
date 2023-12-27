@@ -20,7 +20,7 @@ const influx = new Influx.InfluxDB({
                 value: Influx.FieldType.FLOAT,
             },
             tags: [
-                'tag_number'
+                'sensor'
             ]
         },
         {
@@ -29,16 +29,25 @@ const influx = new Influx.InfluxDB({
                 value: Influx.FieldType.FLOAT,
             },
             tags: [
-                'tag_number'
+                'sensor'
             ]
         },
+	{
+	    measurement: 'brightness',
+	    fields: {
+		value: Influx.FieldType.FLOAT,
+	    },
+	    tags: [
+		'sensor'
+	    ]
+	},
         {
             measurement: 'battery_voltage',
             fields: {
                 value: Influx.FieldType.FLOAT,
             },
             tags: [
-                'tag_number'
+                'sensor'
             ]
         }
     ]
@@ -54,28 +63,36 @@ app.use(bodyParser.json());
 
 app.post('/measurement', (req, res) => {
     const measurement = req.body;
-    const timestamp = new Date();
+    //console.log(JSON.stringify(measurement));
+    var utcString = measurement.time;
+    var timestamp = Date.parse(utcString + ' UTC') / 1000; // convert to seconds
 
     influx.writePoints([
         {
             measurement: 'humidity',
-            tags: {tag_number: measurement.tag_id},
-            fields: {value: measurement.humidity},
+            tags: {sensor: measurement.name},
+            fields: {value: measurement.hm},
             timestamp,
         },
         {
             measurement: 'temperature',
-            tags: {tag_number: measurement.tag_id},
+            tags: {sensor: measurement.name},
             fields: {value: measurement.temp},
             timestamp,
         },
+	{
+	    measurement: 'brightness',
+	    tags: {sensor: measurement.name},
+	    fields: {value: measurement.lux},
+	    timestamp,
+	},
         {
             measurement: 'battery_voltage',
-            tags: {tag_number: measurement.tag_id},
-            fields: {value: measurement.battery},
+            tags: {sensor: measurement.name},
+            fields: {value: measurement.bat},
             timestamp,
         }
-    ]).then(() => {
+    ], {precision: 's'}).then(() => {
         res.status(200).end();
     }).catch(error => {
         console.error(error);
